@@ -6,34 +6,35 @@ from typing import Tuple
 from fastai.vision.all import *
 
 class Dataset:
-    def __init__(self, data, labels, split=None, shuffle=True):
-        if isinstance(data, list): data = tensor(data)
-        if isinstance(labels, list): labels = tensor(labels)    
+	def __init__(self, data, labels, split=None, shuffle=True):
+		if isinstance(data, list): data = tensor(data)
+		if isinstance(labels, list): labels = tensor(labels)    
             
-        if data.shape[0] != labels.shape[0]:
-            raise ValueError("The data and label shapes don't match")
+		if data.shape[0] != labels.shape[0]:
+			raise ValueError("The data and labels shapes don't match")
             
-        if shuffle is True:
-            indexes = torch.randperm(data.shape[0])
-            data = data[indexes]
-            labels = labels[indexes]
+		if shuffle is True:
+			logging.info('Dataset Shuffling ENABLED')
+			indexes = torch.randperm(data.shape[0])
+			data = data[indexes]
+			labels = labels[indexes]
             
-        if split:
-            split_int = int(data.shape[0] * split)    
-            self.train = Dataset(data[:split_int], labels[:split_int])
-            self.valid = Dataset(data[split_int:], labels[split_int:])
-        
-        self.data = data
-        self.labels = labels
-        
-    def __getitem__(self, key):
-        return (self.data[key],self.labels[key])
-    
-    def __iter__(self):
-        return iter((self.data, self.labels))
-    
-    def __len__(self):
-        return self.data.shape[0] # could any of them
+		if split:
+			split_int = int(data.shape[0] * split)    
+			self.train = Dataset(data[:split_int], labels[:split_int])
+			self.valid = Dataset(data[split_int:], labels[split_int:])
+		
+		self.data = data
+		self.labels = labels
+		
+	def __getitem__(self, key):
+		return (self.data[key],self.labels[key])
+
+	def __iter__(self):
+		return iter((self.data, self.labels))
+
+	def __len__(self):
+		return self.data.shape[0] # could any of them
     
 def Dataloader(ds, bs=100):
     return [ds[pos:pos + bs] for pos in range(0, len(ds), bs)]
@@ -127,7 +128,7 @@ if __name__ == '__main__':
 
 	# Model Building, Training & Evaluation
 	torch.random.manual_seed(42)
-	w, b = init_params(sample_image_size) # Size of the number of the features
+	w, b = init_params(sample_image_size) # Number of the features
 	LR = 0.03
 	EPOCHS = 5
 
@@ -147,6 +148,6 @@ if __name__ == '__main__':
 		# Avg Valid Accuracy
 		valid_loss, valid_acc = validate_model(w, b, valid_dl)
 		
-		print(f"| Epoch {_} |")
-		print(f"Train Loss : {batch_loss:.2f}, Valid Accuracy : {valid_acc:.2%}\n")
+		print(f"| Epoch {_} |\n"
+			  f"Train Loss : {batch_loss:.2f}, Valid Accuracy : {valid_acc:.2%}\n")
     
