@@ -5,6 +5,12 @@ from typing import Tuple
 
 from fastai.vision.all import *
 
+logging.basicConfig(filename='mnist.log', level=logging.INFO)
+def custom_logger(text):
+	logging.info(text)	
+	print(text)
+
+
 class Dataset:
 	def __init__(self, data, labels, split=None, shuffle=True):
 		if isinstance(data, list): data = tensor(data)
@@ -14,7 +20,6 @@ class Dataset:
 			raise ValueError("The data and labels shapes don't match")
             
 		if shuffle is True:
-			logging.info('Dataset Shuffling ENABLED')
 			indexes = torch.randperm(data.shape[0])
 			data = data[indexes]
 			labels = labels[indexes]
@@ -83,26 +88,25 @@ def validate_model(w, b, valid_dl):
     return val_loss.item(), torch.stack(val_accs).mean().item() #Overall Loss, Acc
     
 if __name__ == '__main__':
-	logging.basicConfig(filename='mnist.log', level=logging.INFO)
 
 	# Download the Data
 	path = untar_data(URLs.MNIST_SAMPLE)
 	Path.BASE_PATH = path
-	logging.info('Downloaded Data')
+	custom_logger('Downloaded Data')
 
 
 	# Load the data
 	threes = (path/'train'/'3').ls().sorted()
 	sevens = (path/'train'/'7').ls().sorted()
-	logging.info('Loaded Data')
+	custom_logger('Loaded Data')
 
 	three_arrays = [np.array(Image.open(i)) for i in threes]
 	seven_arrays = [np.array(Image.open(i)) for i in sevens]
-	logging.info(f"Number of Images : Threes -> {len(three_arrays)}, Sevens -> {len(seven_arrays)}")
+	custom_logger(f"Number of Images : Threes -> {len(three_arrays)}, Sevens -> {len(seven_arrays)}")
 
 	three_tensors = [tensor(i) for i in three_arrays]
 	seven_tensors = [tensor(i) for i in seven_arrays]
-	logging.info("Converted into Tensors...")
+	custom_logger("Converted into Tensors...")
 
 
 	# Building Images and Labels
@@ -115,7 +119,7 @@ if __name__ == '__main__':
 	# Looking at a sample image
 	sample_image = data[0]
 	sample_image_size = data[0].shape
-	logging.info(f"An image has a size of : {sample_image_size}")
+	custom_logger(f"An image has a size of : {sample_image_size}")
 
 	# Building Dataset
 	ds =  Dataset(data, labels, split=0.8)    
@@ -123,7 +127,7 @@ if __name__ == '__main__':
 	# Building Dataloaders
 	train_dl = Dataloader(ds.train)
 	valid_dl = Dataloader(ds.valid)
-	logging.info("Built Dataset & Dataloaders")
+	custom_logger("Built Dataset & Dataloaders")
 
 
 	# Model Building, Training & Evaluation
